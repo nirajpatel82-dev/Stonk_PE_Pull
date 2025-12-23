@@ -2,7 +2,7 @@ name: Update PE Ratios
 
 on:
   schedule:
-    - cron: '0 11 * * 1,3,5'
+    - cron: '0 11 * * 1,2,3,4,5'
   workflow_dispatch:      # Allows you to run it manually for testing
 
 jobs:
