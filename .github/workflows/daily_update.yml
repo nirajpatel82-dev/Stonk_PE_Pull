@@ -20,7 +20,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install defeatbeta-api
+        pip install yfinance
 
     - name: Run script
       run: python main.py  # Replace with your actual filename
