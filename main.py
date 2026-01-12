@@ -1,8 +1,9 @@
 import yfinance as yf
 import csv
 import os
-from datetime import datetime
 import time
+import pandas as pd
+from datetime import datetime, timedelta
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -77,6 +78,26 @@ def main():
         writer.writerows(results)
 
     print(f"\nDone! Results saved to {OUTPUT_FILE}")
+
+    # 1. Load the dataset
+    file_name = 'pe_ratios_log.csv'
+    df = pd.read_csv(file_name)
+
+    # 2. Convert the 'date' column to actual datetime objects
+    df['date'] = pd.to_datetime(df['date'])
+
+    # 3. Calculate the cutoff date (365 days ago from today)
+    cutoff_date = datetime.now() - timedelta(days=365)
+
+    # 4. Filter the dataframe to keep only rows newer than the cutoff
+    # We use .copy() to avoid any SettingWithCopy warnings later
+    filtered_df = df[df['date'] >= cutoff_date].copy()
+
+    # 5. Optional: Convert the date back to the original string format "YYYY-MM-DD"
+    filtered_df['date'] = filtered_df['date'].dt.strftime('%Y-%m-%d')
+
+    # 6. Rewrite the CSV file
+    filtered_df.to_index(file_name, index=False)
 
 
 if __name__ == "__main__":
