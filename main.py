@@ -80,7 +80,7 @@ def main():
     print(f"\nDone! Results saved to {OUTPUT_FILE}")
 
     # 1. Load the dataset
-    file_name = 'pe_ratios_log.csv'
+    file_name = OUTPUT_FILE
     df = pd.read_csv(file_name)
 
     # 2. Convert the 'date' column to actual datetime objects
