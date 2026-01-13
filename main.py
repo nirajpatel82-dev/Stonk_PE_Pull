@@ -41,43 +41,43 @@ def get_pe_data(symbol):
 
 
 def main():
-    # today = datetime.now().strftime('%Y-%m-%d')
-    # results = []
-    #
-    # # 1. Read tickers from CSV
-    # if not os.path.exists(INPUT_FILE):
-    #     print(f"Error: {INPUT_FILE} not found.")
-    #     return
-    #
-    # with open(INPUT_FILE, mode='r') as f:
-    #     reader = csv.DictReader(f)
-    #     # Handles potential whitespace in headers
-    #     tickers = [row['ticker'].strip() for row in reader]
-    #
-    # # 2. Fetch Data
-    # print(f"Fetching data for {len(tickers)} tickers via yfinance...")
-    # for symbol in tickers:
-    #     trailing, forward = get_pe_data(symbol)
-    #     results.append({
-    #         'date': today,
-    #         'ticker': symbol,
-    #         'trailing_pe': trailing,
-    #         'forward_pe': forward
-    #     })
-    #     print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}")
-    #     time.sleep(1)
-    #
-    # # 3. Append to or Create output file
-    # file_exists = os.path.isfile(OUTPUT_FILE)
-    # fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe']
-    #
-    # with open(OUTPUT_FILE, mode='a', newline='') as f:
-    #     writer = csv.DictWriter(f, fieldnames=fieldnames)
-    #     if not file_exists:
-    #         writer.writeheader()
-    #     writer.writerows(results)
-    #
-    # print(f"\nDone! Results saved to {OUTPUT_FILE}")
+    today = datetime.now().strftime('%Y-%m-%d')
+    results = []
+
+    # 1. Read tickers from CSV
+    if not os.path.exists(INPUT_FILE):
+        print(f"Error: {INPUT_FILE} not found.")
+        return
+
+    with open(INPUT_FILE, mode='r') as f:
+        reader = csv.DictReader(f)
+        # Handles potential whitespace in headers
+        tickers = [row['ticker'].strip() for row in reader]
+
+    # 2. Fetch Data
+    print(f"Fetching data for {len(tickers)} tickers via yfinance...")
+    for symbol in tickers:
+        trailing, forward = get_pe_data(symbol)
+        results.append({
+            'date': today,
+            'ticker': symbol,
+            'trailing_pe': trailing,
+            'forward_pe': forward
+        })
+        print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}")
+        time.sleep(1)
+
+    # 3. Append to or Create output file
+    file_exists = os.path.isfile(OUTPUT_FILE)
+    fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe']
+
+    with open(OUTPUT_FILE, mode='a', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(results)
+
+    print(f"\nDone! Results saved to {OUTPUT_FILE}")
 
     # 1. Load the dataset
     file_name = OUTPUT_FILE
