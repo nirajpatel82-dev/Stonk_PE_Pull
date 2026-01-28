@@ -1,4 +1,4 @@
-date,ticker,trailing_pe,forward_pe,price
+date,ticker,trailing_pe,forward_pe,price,marketCap
 2025-12-18,A,30.01535,20.860767,136.66
 2025-12-18,AA,10.574725,12.157928,48.18
 2025-12-18,AAM,,,10.62

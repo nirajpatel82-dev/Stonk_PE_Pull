@@ -20,8 +20,9 @@ def get_pe_data(symbol):
         # Yahoo Finance provides two types of PE ratios
         trailing_pe = info.get('trailingPE', 'N/A')
         forward_pe = info.get('forwardPE', 'N/A')
+        marketCap = info.get('marketCap', 'N/A')
 
-        return trailing_pe, forward_pe
+        return trailing_pe, forward_pe, marketCap
     except Exception as e:
         print(f"Error fetching {symbol}: {e}, trying again after 5s...")
         time.sleep(5)
@@ -32,12 +33,13 @@ def get_pe_data(symbol):
             # Yahoo Finance provides two types of PE ratios
             trailing_pe = info.get('trailingPE', 'N/A')
             forward_pe = info.get('forwardPE', 'N/A')
+            marketCap = info.get('marketCap', 'N/A')
 
-            return trailing_pe, forward_pe
+            return trailing_pe, forward_pe, marketCap
         except Exception as e:
             print(f"Error fetching {symbol}: {e}, failing, moving on...")
             time.sleep(5)
-            return "Error", "Error"
+            return "Error", "Error", "Error"
 
 
 def main():
@@ -57,19 +59,20 @@ def main():
     # 2. Fetch Data
     print(f"Fetching data for {len(tickers)} tickers via yfinance...")
     for symbol in tickers:
-        trailing, forward = get_pe_data(symbol)
+        trailing, forward, market_cap = get_pe_data(symbol)
         results.append({
             'date': today,
             'ticker': symbol,
             'trailing_pe': trailing,
-            'forward_pe': forward
+            'forward_pe': forward,
+            'marketCap': market_cap,
         })
-        print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}")
+        print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}, Market Cap: {market_cap}")
         time.sleep(1)
 
     # 3. Append to or Create output file
     file_exists = os.path.isfile(OUTPUT_FILE)
-    fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe']
+    fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe', 'marketCap']
 
     with open(OUTPUT_FILE, mode='a', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
