@@ -65,6 +65,7 @@ def main():
             'ticker': symbol,
             'trailing_pe': trailing,
             'forward_pe': forward,
+            'price': '',
             'marketCap': market_cap,
         })
         print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}, Market Cap: {market_cap}")
@@ -72,7 +73,7 @@ def main():
 
     # 3. Append to or Create output file
     file_exists = os.path.isfile(OUTPUT_FILE)
-    fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe', 'marketCap']
+    fieldnames = ['date', 'ticker', 'trailing_pe', 'forward_pe', 'price', 'marketCap']
 
     with open(OUTPUT_FILE, mode='a', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
@@ -144,6 +145,7 @@ def update_missing_prices(file_path):
                 print(f"Found {ticker} on {target_date.date()}: {price:.2f}")
             else:
                 print(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
+                df.at[idx, 'price'] = 'N/A'
 
         except Exception as e:
             print(f"Failed to fetch {ticker}: {e}, trying again after 5s...")
@@ -165,9 +167,11 @@ def update_missing_prices(file_path):
                     print(f"Found {ticker} on {target_date.date()}: {price:.2f}")
                 else:
                     print(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
+                    df.at[idx, 'price'] = 'N/A'
 
             except Exception as e:
                 print(f"Failed to fetch {ticker}: {e}, failed")
+                df.at[idx, 'price'] = 'N/A'
                 time.sleep(5)
 
 
