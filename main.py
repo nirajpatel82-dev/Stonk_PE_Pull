@@ -4,11 +4,32 @@ import os
 import time
 import pandas as pd
 from datetime import datetime, timedelta
+import logging
+
 
 # Configuration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_FILE = os.path.join(BASE_DIR, 'tickers.csv')
 OUTPUT_FILE = os.path.join(BASE_DIR, 'pe_ratios_log.csv')
+
+# 1. Create a custom logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG) # Capture everything from DEBUG level and up
+
+# 2. Create handlers (where the data goes)
+c_handler = logging.StreamHandler()    # Console
+f_handler = logging.FileHandler(os.path.join(BASE_DIR, 'debug.csv')) # File
+
+# 3. Create formatters (how the data looks)
+# This includes a timestamp, the importance level, and your message
+log_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+c_handler.setFormatter(log_format)
+f_handler.setFormatter(log_format)
+
+# 4. Add handlers to the logger
+logger.addHandler(c_handler)
+logger.addHandler(f_handler)
+
 
 
 def get_pe_data(symbol):
@@ -24,7 +45,7 @@ def get_pe_data(symbol):
 
         return trailing_pe, forward_pe, marketCap
     except Exception as e:
-        print(f"Error fetching {symbol}: {e}, trying again after 5s...")
+        logger.info(f"Error fetching {symbol}: {e}, trying again after 5s...")
         time.sleep(5)
         try:
             ticker = yf.Ticker(symbol)
@@ -37,7 +58,7 @@ def get_pe_data(symbol):
 
             return trailing_pe, forward_pe, marketCap
         except Exception as e:
-            print(f"Error fetching {symbol}: {e}, failing, moving on...")
+            logger.info(f"Error fetching {symbol}: {e}, failing, moving on...")
             time.sleep(5)
             return "Error", "Error", "Error"
 
@@ -48,7 +69,7 @@ def main():
 
     # 1. Read tickers from CSV
     if not os.path.exists(INPUT_FILE):
-        print(f"Error: {INPUT_FILE} not found.")
+        logger.info(f"Error: {INPUT_FILE} not found.")
         return
 
     with open(INPUT_FILE, mode='r') as f:
@@ -57,7 +78,7 @@ def main():
         tickers = [row['ticker'].strip() for row in reader]
 
     # 2. Fetch Data
-    print(f"Fetching data for {len(tickers)} tickers via yfinance...")
+    logger.info(f"Fetching data for {len(tickers)} tickers via yfinance...")
     for symbol in tickers:
         trailing, forward, market_cap = get_pe_data(symbol)
         results.append({
@@ -68,7 +89,7 @@ def main():
             'price': '',
             'marketCap': market_cap,
         })
-        print(f"{symbol} -> Trailing: {trailing}, Forward: {forward}, Market Cap: {market_cap}")
+        logger.info(f"{symbol} -> Trailing: {trailing}, Forward: {forward}, Market Cap: {market_cap}")
         time.sleep(1)
 
     # 3. Append to or Create output file
@@ -81,7 +102,7 @@ def main():
             writer.writeheader()
         writer.writerows(results)
 
-    print(f"\nDone! Results saved to {OUTPUT_FILE}")
+    logger.info(f"\nDone! Results saved to {OUTPUT_FILE}")
 
     # 1. Load the dataset
     file_name = OUTPUT_FILE
@@ -117,10 +138,10 @@ def update_missing_prices(file_path):
     missing_indices = df[df['price'].isna()].index
 
     if len(missing_indices) == 0:
-        print("No missing prices to fill.")
+        logger.info("No missing prices to fill.")
         return
 
-    print(f"Updating {len(missing_indices)} missing entries...")
+    logger.info(f"Updating {len(missing_indices)} missing entries...")
 
     for idx in missing_indices:
         ticker = df.at[idx, 'ticker']
@@ -142,13 +163,13 @@ def update_missing_prices(file_path):
                 # Extract the Close price
                 price = data['Close'].iloc[0][ticker]
                 df.at[idx, 'price'] = round(float(price), 2)
-                print(f"Found {ticker} on {target_date.date()}: {price:.2f}")
+                logger.info(f"Found {ticker} on {target_date.date()}: {price:.2f}")
             else:
-                print(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
+                logger.info(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
                 df.at[idx, 'price'] = 'N/A'
 
         except Exception as e:
-            print(f"Failed to fetch {ticker}: {e}, trying again after 5s...")
+            logger.info(f"Failed to fetch {ticker}: {e}, trying again after 5s...")
             time.sleep(5)
             try:
                 # Fetch data
@@ -162,15 +183,15 @@ def update_missing_prices(file_path):
                 if not data.empty:
                     # Extract the Close price
                     price = data['Close'].iloc[0][ticker]
-                    print(price)
+                    logger.info(price)
                     df.at[idx, 'price'] = round(float(price), 2)
-                    print(f"Found {ticker} on {target_date.date()}: {price:.2f}")
+                    logger.info(f"Found {ticker} on {target_date.date()}: {price:.2f}")
                 else:
-                    print(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
+                    logger.info(f"No data for {ticker} on {target_date.date()} (Market might be closed).")
                     df.at[idx, 'price'] = 'N/A'
 
             except Exception as e:
-                print(f"Failed to fetch {ticker}: {e}, failed")
+                logger.info(f"Failed to fetch {ticker}: {e}, failed")
                 df.at[idx, 'price'] = 'N/A'
                 time.sleep(5)
 
@@ -179,7 +200,7 @@ def update_missing_prices(file_path):
     # We convert date back to string format to keep the CSV clean
     df['date'] = df['date'].dt.strftime('%Y-%m-%d')
     df.to_csv(file_path, index=False)
-    print("Update complete.")
+    logger.info("Update complete.")
 
 if __name__ == "__main__":
     main()
